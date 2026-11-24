@@ -10,6 +10,11 @@ from .models import Flight, FlightPlan
 from .serializers import FlightSerializer, FlightPlanSerializer
 
 
+class HealthView(APIView):
+    def get(self, request):
+        return Response({"status": "ok"})
+
+
 class FlightViewSet(viewsets.ModelViewSet):
     """
     CRUD API for individual study sessions:

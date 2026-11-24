@@ -37,6 +37,7 @@ class StudyPilotAPITests(APITestCase):
 
     def test_api_endpoints_are_public(self):
         paths = [
+            "/api/health/",
             "/api/flights/",
             "/api/subjects/",
             "/api/flight-plan/",
@@ -48,6 +49,11 @@ class StudyPilotAPITests(APITestCase):
             with self.subTest(path=path):
                 response = self.client.get(path)
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_health_endpoint_response(self):
+        response = self.client.get("/api/health/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {"status": "ok"})
 
     def test_login_route_is_removed(self):
         response = self.client.post("/api/auth/login/", {}, format="json")

@@ -4,6 +4,7 @@
 .env
 venv/
 .venv/
+node_modules/
 backend/venv/
 backend/.venv/
 frontend/node_modules/
