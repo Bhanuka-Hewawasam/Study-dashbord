@@ -38,7 +38,7 @@ export default function MonthlyReportView() {
   const [loading, setLoading] = useState(true);
 
   // Donut chart colors: Pink, Yellow, Coral, Mint
-  const DONUT_COLORS = ['#FF6B4A', '#F7A8D8', '#FFD23F', '#5ED3A8', '#8E98B0'];
+  const DONUT_COLORS = ['#168A4A', '#55C78C', '#B7E4C7', '#D7E88C', '#2D8C8B'];
 
   const fetchMonthlyReport = async (monthStr) => {
     try {
@@ -114,10 +114,10 @@ export default function MonthlyReportView() {
   // Calendar Heatmap Color Calculator
   const getHeatmapColor = (minutes) => {
     if (!minutes || minutes <= 0) return '#F4F7FC';
-    if (minutes < 45) return '#FFE8E2';
-    if (minutes < 90) return '#FFC7B9';
-    if (minutes < 180) return '#FF967F';
-    return '#FF6B4A';
+    if (minutes < 45) return '#E8F6EC';
+    if (minutes < 90) return '#B7E4C7';
+    if (minutes < 180) return '#55C78C';
+    return '#168A4A';
   };
 
   // Custom LineChart Tooltip
@@ -268,8 +268,8 @@ export default function MonthlyReportView() {
             <AreaChart data={dailyData} margin={{ top: 15, right: 15, left: -15, bottom: 0 }}>
               <defs>
                 <linearGradient id="coralAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#FF6B4A" stopOpacity={0.28} />
-                  <stop offset="95%" stopColor="#FF6B4A" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="#168A4A" stopOpacity={0.28} />
+                  <stop offset="95%" stopColor="#168A4A" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
               <XAxis
@@ -298,11 +298,11 @@ export default function MonthlyReportView() {
               <Area
                 type="monotone"
                 dataKey="minutes"
-                stroke="#FF6B4A"
+                stroke="#168A4A"
                 strokeWidth={3}
                 fillOpacity={1}
                 fill="url(#coralAreaGradient)"
-                activeDot={{ r: 6, fill: '#FF6B4A', stroke: '#FFFFFF', strokeWidth: 2 }}
+                activeDot={{ r: 6, fill: '#168A4A', stroke: '#FFFFFF', strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -395,10 +395,10 @@ export default function MonthlyReportView() {
             <div className="heatmap-legend">
               <span className="legend-label">Less</span>
               <span className="heatmap-legend-cell" style={{ backgroundColor: '#F4F7FC' }} />
-              <span className="heatmap-legend-cell" style={{ backgroundColor: '#FFE8E2' }} />
-              <span className="heatmap-legend-cell" style={{ backgroundColor: '#FFC7B9' }} />
-              <span className="heatmap-legend-cell" style={{ backgroundColor: '#FF967F' }} />
-              <span className="heatmap-legend-cell" style={{ backgroundColor: '#FF6B4A' }} />
+              <span className="heatmap-legend-cell" style={{ backgroundColor: '#E8F6EC' }} />
+              <span className="heatmap-legend-cell" style={{ backgroundColor: '#B7E4C7' }} />
+              <span className="heatmap-legend-cell" style={{ backgroundColor: '#55C78C' }} />
+              <span className="heatmap-legend-cell" style={{ backgroundColor: '#168A4A' }} />
               <span className="legend-label">More</span>
             </div>
           </div>

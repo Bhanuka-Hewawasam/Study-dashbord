@@ -68,7 +68,7 @@ export default function JourneyView() {
           particleCount: 50,
           spread: 60,
           origin: { y: 0.5 },
-          colors: ['#E0A83B', '#0B2D5C', '#FF6B4A', '#5ED3A8'],
+          colors: ['#168A4A', '#55C78C', '#B7E4C7', '#D7E88C'],
         });
       } catch (e) {
         // Safe fallback
@@ -170,7 +170,7 @@ export default function JourneyView() {
               <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#0B2D5C" />
                 <stop offset="50%" stopColor="#E0A83B" />
-                <stop offset="100%" stopColor="#FF6B4A" />
+                <stop offset="100%" stopColor="#168A4A" />
               </linearGradient>
 
               {/* Shadow filter for nodes */}
@@ -255,7 +255,7 @@ export default function JourneyView() {
                       x={m.mapX}
                       y={m.mapY + 4}
                       textAnchor="middle"
-                      fill="#FFD23F"
+                      fill="#D7E88C"
                       fontSize="10"
                       fontWeight="700"
                       fontFamily="system-ui"
@@ -308,8 +308,8 @@ export default function JourneyView() {
               transform={`translate(${planePos.x}, ${planePos.y}) rotate(${planePos.angle})`}
               className="map-plane-g"
             >
-              <circle r="16" fill="#FF6B4A" fillOpacity="0.25" className="plane-glow-ring" />
-              <circle r="12" fill="#FF6B4A" stroke="#FFFFFF" strokeWidth="2" />
+              <circle r="16" fill="#168A4A" fillOpacity="0.25" className="plane-glow-ring" />
+              <circle r="12" fill="#168A4A" stroke="#FFFFFF" strokeWidth="2" />
               <path
                 d="M -5 -3 L 5 0 L -5 3 L -3 0 Z"
                 fill="#FFFFFF"

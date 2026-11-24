@@ -51,12 +51,12 @@
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #FF6B4A 0%, #FF8A65 100%);
+  background: linear-gradient(135deg, #168A4A 0%, #55C78C 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 8px 18px rgba(255, 107, 74, 0.25);
+  box-shadow: 0 8px 18px rgba(22, 138, 74, 0.22);
 }
 
 .brand-name {
@@ -159,6 +159,7 @@
 }
 
 .dashboard-card:hover {
+  transform: translateY(-4px);
   box-shadow: var(--shadow-hover);
 }
 
@@ -344,13 +345,13 @@
    CARD 2: YOUR SUBJECTS (TOP-RIGHT HERO CORAL CARD)
    -------------------------------------------------------------------------- */
 .subjects-hero-card {
-  background: linear-gradient(135deg, #FF6B4A 0%, #FF7F62 100%);
+  background: linear-gradient(135deg, #168A4A 0%, #55C78C 100%);
   color: white;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 20px;
-  box-shadow: 0 16px 40px rgba(255, 107, 74, 0.28);
+  box-shadow: 0 16px 40px rgba(22, 138, 74, 0.24);
 }
 
 .subjects-card-header {
@@ -471,7 +472,7 @@
 
 .thin-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #FF8A65 0%, #FF6B4A 100%);
+  background: linear-gradient(90deg, #55C78C 0%, #168A4A 100%);
   border-radius: var(--radius-pill);
   transition: width 0.5s ease;
 }
@@ -544,7 +545,7 @@
 }
 
 .tooltip-value {
-  color: #FFD23F;
+  color: #D7E88C;
 }
 
 .tooltip-sub {
@@ -590,8 +591,8 @@
    CARD 4: LOG STUDY TIME (BOTTOM-RIGHT GLOSSY PINK CARD)
    -------------------------------------------------------------------------- */
 .log-time-hero-card {
-  background: linear-gradient(135deg, #FFEBF4 0%, #FFF5FA 100%);
-  border: 1px solid rgba(247, 168, 216, 0.3);
+  background: linear-gradient(135deg, #E8F6EC 0%, #F5FBF6 100%);
+  border: 1px solid rgba(22, 138, 74, 0.18);
   overflow: hidden;
   position: relative;
   display: flex;
@@ -605,12 +606,18 @@
   filter: blur(40px);
   pointer-events: none;
   opacity: 0.6;
+  animation: ambient-float 8s ease-in-out infinite alternate;
+}
+
+@keyframes ambient-float {
+  from { transform: translate3d(-4px, 3px, 0) scale(0.96); }
+  to { transform: translate3d(8px, -7px, 0) scale(1.05); }
 }
 
 .blob-1 {
   width: 140px;
   height: 140px;
-  background-color: #F7A8D8;
+  background-color: #B7E4C7;
   top: -30px;
   right: -30px;
 }
@@ -618,7 +625,7 @@
 .blob-2 {
   width: 120px;
   height: 120px;
-  background-color: #FFD23F;
+  background-color: #D7E88C;
   bottom: -20px;
   left: -20px;
 }
@@ -628,7 +635,7 @@
   border-radius: 20px;
   padding: 20px 24px;
   width: 100%;
-  box-shadow: 0 10px 30px rgba(247, 168, 216, 0.18);
+  box-shadow: 0 10px 30px rgba(22, 138, 74, 0.12);
   position: relative;
   z-index: 2;
   display: flex;
@@ -673,7 +680,7 @@
 }
 
 .form-feedback.success {
-  background-color: #EDFAF4;
+  background-color: #E9F8EE;
   color: #1B8359;
 }
 
@@ -685,7 +692,7 @@
 .form-feedback.info {
   background-color: #F0F4FA;
   color: var(--color-primary);
-  border: 1px solid rgba(255, 107, 74, 0.2);
+  border: 1px solid rgba(22, 138, 74, 0.2);
 }
 
 .log-time-form {
@@ -732,13 +739,46 @@
 .modern-input:focus {
   border-color: var(--color-primary);
   background-color: white;
-  box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
+  box-shadow: 0 0 0 3px rgba(22, 138, 74, 0.1);
 }
 
 .duration-inputs-row {
   display: flex;
   align-items: flex-end;
   gap: 10px;
+}
+
+.time-entry-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: #EFF8F1;
+}
+
+.time-entry-toggle button {
+  padding: 7px 10px;
+  border-radius: 9px;
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.time-entry-toggle button.active {
+  background: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(22, 138, 74, 0.12);
+  color: var(--color-primary);
+}
+
+.time-inputs-row {
+  gap: 8px;
+}
+
+.time-inputs-row .form-group,
+.time-inputs-row .modern-input {
+  min-width: 0;
 }
 
 .send-btn-wrapper {
@@ -754,7 +794,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 20px rgba(255, 107, 74, 0.35);
+  box-shadow: 0 8px 20px rgba(22, 138, 74, 0.3);
   flex-shrink: 0;
   transition: all 0.2s ease;
 }
@@ -802,7 +842,7 @@
 
 .combobox-clear-btn:hover {
   color: var(--color-primary);
-  background-color: rgba(255, 107, 74, 0.1);
+  background-color: rgba(22, 138, 74, 0.1);
 }
 
 .combobox-chevron-btn {
@@ -920,7 +960,7 @@
   color: var(--color-primary);
   font-size: 0.82rem;
   background-color: var(--color-primary-light);
-  border-top: 1px dashed rgba(255, 107, 74, 0.25);
+  border-top: 1px dashed rgba(22, 138, 74, 0.25);
   margin-top: 4px;
 }
 
@@ -957,8 +997,8 @@
 
 .study-timer-widget.timer-active {
   background: linear-gradient(135deg, #FFF6F3 0%, #FFEEEC 100%);
-  border-color: rgba(255, 107, 74, 0.35);
-  box-shadow: 0 4px 16px rgba(255, 107, 74, 0.12);
+  border-color: rgba(22, 138, 74, 0.35);
+  box-shadow: 0 4px 16px rgba(22, 138, 74, 0.12);
 }
 
 .timer-top-row {
@@ -1207,9 +1247,9 @@
 }
 
 .stat-icon-amber { color: #FFB020; }
-.stat-icon-coral { color: #FF6B4A; }
-.stat-icon-yellow { color: #FFD23F; }
-.stat-icon-mint { color: #5ED3A8; }
+.stat-icon-coral { color: #168A4A; }
+.stat-icon-yellow { color: #D7E88C; }
+.stat-icon-mint { color: #55C78C; }
 
 .report-stat-value {
   font-size: 2.2rem;
@@ -1251,7 +1291,7 @@
 }
 
 .change-badge.up {
-  background-color: #EDFAF4;
+  background-color: #E9F8EE;
   color: #1B8359;
 }
 
@@ -1303,7 +1343,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #FF6B4A;
+  background-color: #168A4A;
 }
 
 .legend-dot-goal {
@@ -1450,7 +1490,7 @@
 
 .heatmap-day-square:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(255, 107, 74, 0.2);
+  box-shadow: 0 4px 12px rgba(22, 138, 74, 0.2);
   z-index: 2;
 }
 
@@ -1999,7 +2039,7 @@
 }
 
 .goal-success-banner {
-  background-color: #EDFAF4;
+  background-color: #E9F8EE;
   color: #1B8359;
   padding: 10px 16px;
   border-radius: 12px;
@@ -2065,7 +2105,7 @@
 .preset-pill.active {
   background-color: var(--color-primary);
   color: white;
-  box-shadow: 0 4px 12px rgba(255, 107, 74, 0.25);
+  box-shadow: 0 4px 12px rgba(22, 138, 74, 0.22);
 }
 
 .slider-wrapper {

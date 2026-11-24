@@ -16,8 +16,14 @@ import {
 } from 'lucide-react';
 import { flightsApi } from '../../api/client';
 import SubjectInput from '../common/SubjectInput';
+import {
+  combineLocalDateTime,
+  formatLocalDate,
+  formatLocalTime,
+} from '../../utils/dateTime';
 
 export default function StudyLogView() {
+  const todayStr = formatLocalDate();
   const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,6 +43,9 @@ export default function StudyLogView() {
   const [editDate, setEditDate] = useState('');
   const [editHours, setEditHours] = useState('1');
   const [editMinutes, setEditMinutes] = useState('0');
+  const [editTimeEntryMode, setEditTimeEntryMode] = useState('clock');
+  const [editStartTime, setEditStartTime] = useState('10:00');
+  const [editEndTime, setEditEndTime] = useState('11:00');
   const [editNotes, setEditNotes] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
@@ -116,9 +125,12 @@ export default function StudyLogView() {
     setEditSubject(flight.subject || '');
     setEditNotes(flight.notes || '');
 
-    const d = new Date(flight.start_time);
-    const dateStr = d.toISOString().split('T')[0];
-    setEditDate(dateStr);
+    const startDateTime = new Date(flight.start_time);
+    const endDateTime = new Date(flight.end_time);
+    setEditDate(formatLocalDate(startDateTime));
+    setEditStartTime(formatLocalTime(startDateTime));
+    setEditEndTime(formatLocalTime(endDateTime));
+    setEditTimeEntryMode('clock');
 
     const totalMins = flight.duration_minutes || 0;
     setEditHours(String(Math.floor(totalMins / 60)));
@@ -130,29 +142,56 @@ export default function StudyLogView() {
     e.preventDefault();
     if (!editingSession) return;
 
-    const hoursNum = parseInt(editHours, 10) || 0;
-    const minsNum = parseInt(editMinutes, 10) || 0;
-    const totalMins = hoursNum * 60 + minsNum;
-
     if (!editSubject.trim()) {
       alert('Please provide a subject name.');
       return;
     }
-    if (totalMins <= 0) {
-      alert('Duration must be greater than 0 minutes.');
+    if (editDate > todayStr) {
+      alert('Study sessions can only be logged for today or an earlier date.');
       return;
+    }
+
+    let startDateTime;
+    let endDateTime;
+    let totalMins;
+    if (editTimeEntryMode === 'clock') {
+      startDateTime = combineLocalDateTime(editDate, editStartTime);
+      endDateTime = combineLocalDateTime(editDate, editEndTime);
+      if (
+        Number.isNaN(startDateTime.getTime()) ||
+        Number.isNaN(endDateTime.getTime()) ||
+        endDateTime <= startDateTime
+      ) {
+        alert('End time must be later than start time.');
+        return;
+      }
+      totalMins = Math.round((endDateTime - startDateTime) / 60000);
+    } else {
+      const hoursNum = parseInt(editHours, 10) || 0;
+      const minsNum = parseInt(editMinutes, 10) || 0;
+      totalMins = hoursNum * 60 + minsNum;
+      if (totalMins <= 0) {
+        alert('Duration must be greater than 0 minutes.');
+        return;
+      }
+      endDateTime = combineLocalDateTime(editDate, editEndTime);
+      startDateTime = new Date(endDateTime.getTime() - totalMins * 60000);
+      if (
+        Number.isNaN(endDateTime.getTime()) ||
+        formatLocalDate(startDateTime) !== editDate
+      ) {
+        alert('This duration crosses midnight. Choose exact start and end times instead.');
+        return;
+      }
     }
 
     try {
       setIsSavingEdit(true);
-      const targetDate = new Date(editDate + 'T12:00:00');
-      const startTime = new Date(targetDate.getTime() - totalMins * 60000);
-
       const updated = await flightsApi.update(editingSession.id, {
         subject: editSubject.trim(),
         notes: editNotes.trim(),
-        start_time: startTime.toISOString(),
-        end_time: targetDate.toISOString(),
+        start_time: startDateTime.toISOString(),
+        end_time: endDateTime.toISOString(),
       });
 
       setFlights((prev) =>
@@ -428,6 +467,7 @@ export default function StudyLogView() {
                   type="date"
                   className="modern-input"
                   value={editDate}
+                  max={todayStr}
                   onChange={(e) => setEditDate(e.target.value)}
                   required
                 />
@@ -445,35 +485,90 @@ export default function StudyLogView() {
                 />
               </div>
 
-              <div className="duration-inputs-row">
-                <div className="form-group flex-1">
-                  <label className="form-label">
-                    <Clock size={14} className="label-icon" /> Hours
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="24"
-                    className="modern-input"
-                    value={editHours}
-                    onChange={(e) => setEditHours(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="form-group flex-1">
-                  <label className="form-label">Minutes</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="59"
-                    className="modern-input"
-                    value={editMinutes}
-                    onChange={(e) => setEditMinutes(e.target.value)}
-                    required
-                  />
-                </div>
+              <div className="time-entry-toggle" role="group" aria-label="Time entry mode">
+                <button
+                  type="button"
+                  className={editTimeEntryMode === 'clock' ? 'active' : ''}
+                  aria-pressed={editTimeEntryMode === 'clock'}
+                  onClick={() => setEditTimeEntryMode('clock')}
+                >
+                  Start & end
+                </button>
+                <button
+                  type="button"
+                  className={editTimeEntryMode === 'duration' ? 'active' : ''}
+                  aria-pressed={editTimeEntryMode === 'duration'}
+                  onClick={() => setEditTimeEntryMode('duration')}
+                >
+                  Duration
+                </button>
               </div>
+
+              {editTimeEntryMode === 'clock' ? (
+                <div className="duration-inputs-row time-inputs-row">
+                  <div className="form-group flex-1">
+                    <label className="form-label">
+                      <Clock size={14} className="label-icon" /> Start time
+                    </label>
+                    <input
+                      type="time"
+                      className="modern-input"
+                      value={editStartTime}
+                      onChange={(e) => setEditStartTime(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="form-group flex-1">
+                    <label className="form-label">End time</label>
+                    <input
+                      type="time"
+                      className="modern-input"
+                      value={editEndTime}
+                      onChange={(e) => setEditEndTime(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="duration-inputs-row time-inputs-row">
+                  <div className="form-group flex-1">
+                    <label className="form-label">
+                      <Clock size={14} className="label-icon" /> Hours
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="24"
+                      className="modern-input"
+                      value={editHours}
+                      onChange={(e) => setEditHours(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="form-group flex-1">
+                    <label className="form-label">Minutes</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="59"
+                      className="modern-input"
+                      value={editMinutes}
+                      onChange={(e) => setEditMinutes(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="form-group flex-1">
+                    <label className="form-label">End time</label>
+                    <input
+                      type="time"
+                      className="modern-input"
+                      value={editEndTime}
+                      onChange={(e) => setEditEndTime(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="form-group">
                 <label className="form-label">Notes</label>

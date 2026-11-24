@@ -5,29 +5,29 @@
 
 :root {
   /* Color Palette */
-  --bg-gradient-start: #EAF1FF;
-  --bg-gradient-end: #F6F1FF;
-  --color-dashboard-bg: #F8FAFD;
+  --bg-gradient-start: #ECF8F0;
+  --bg-gradient-end: #F3FAF5;
+  --color-dashboard-bg: #F7FBF8;
   --color-card: #FFFFFF;
 
   /* Primary Brand & Accents */
-  --color-primary: #FF6B4A;            /* Coral orange */
-  --color-primary-hover: #FA5834;
-  --color-primary-light: #FFF0ED;
-  --color-pink: #F7A8D8;               /* Soft pink */
-  --color-pink-light: #FDF0F8;
-  --color-yellow: #FFD23F;             /* Soft yellow */
-  --color-yellow-light: #FFF9E6;
-  --color-mint: #5ED3A8;               /* Mint green */
-  --color-mint-light: #EDFAF4;
+  --color-primary: #168A4A;
+  --color-primary-hover: #116D3A;
+  --color-primary-light: #E8F6EC;
+  --color-pink: #B7E4C7;
+  --color-pink-light: #EFF9F2;
+  --color-yellow: #D7E88C;
+  --color-yellow-light: #F7FBEA;
+  --color-mint: #55C78C;
+  --color-mint-light: #E9F8EE;
 
   /* Neutrals & Text */
-  --color-text-title: #192038;
-  --color-text-body: #4E5971;
-  --color-text-muted: #8E98B0;
-  --color-text-subtle: #BAC3D6;
-  --color-border: #EDF2F9;
-  --color-border-subtle: #F1F4F9;
+  --color-text-title: #173323;
+  --color-text-body: #4C6656;
+  --color-text-muted: #819386;
+  --color-text-subtle: #B1C4B7;
+  --color-border: #E3EEE6;
+  --color-border-subtle: #EDF4EF;
 
   /* Typography */
   --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
@@ -38,7 +38,7 @@
   --radius-pill: 9999px;
   --shadow-soft: 0 14px 40px rgba(28, 48, 88, 0.05);
   --shadow-hover: 0 20px 48px rgba(28, 48, 88, 0.09);
-  --shadow-coral: 0 10px 25px rgba(255, 107, 74, 0.3);
+  --shadow-coral: 0 10px 25px rgba(22, 138, 74, 0.24);
 }
 
 /* CSS Reset */
@@ -113,4 +113,41 @@ input, select {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #BAC8DC;
+}
+
+@keyframes soft-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dashboard-card,
+.report-header-card,
+.report-chart-card,
+.report-donut-card,
+.report-heatmap-card,
+.goal-card,
+.journey-header,
+.interactive-map-card {
+  animation: soft-rise-in 0.55s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.dashboard-card:nth-child(2) { animation-delay: 70ms; }
+.dashboard-card:nth-child(3) { animation-delay: 140ms; }
+.dashboard-card:nth-child(4) { animation-delay: 210ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

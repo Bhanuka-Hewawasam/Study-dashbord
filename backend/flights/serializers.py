@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.utils import timezone
 from .models import Flight, FlightPlan
 
 
@@ -29,6 +30,10 @@ class FlightSerializer(serializers.ModelSerializer):
         if start and end and end < start:
             raise serializers.ValidationError({
                 "end_time": "Touchdown (end_time) cannot be earlier than Take Off (start_time)."
+            })
+        if end and timezone.localdate(end) > timezone.localdate():
+            raise serializers.ValidationError({
+                "end_time": "Study sessions cannot be logged on a future date."
             })
         return attrs
 

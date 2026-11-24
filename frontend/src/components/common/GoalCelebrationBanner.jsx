@@ -32,7 +32,7 @@ export default function GoalCelebrationBanner({ todayMinutes = 0, dailyGoalMinut
           particleCount: 85,
           spread: 70,
           origin: { y: 0.2 },
-          colors: ['#FF6B4A', '#E0A83B', '#0B2D5C', '#5ED3A8', '#F7A8D8'],
+          colors: ['#168A4A', '#55C78C', '#B7E4C7', '#D7E88C', '#2D8C8B'],
         });
       } catch (err) {
         console.warn('Confetti could not be fired:', err);

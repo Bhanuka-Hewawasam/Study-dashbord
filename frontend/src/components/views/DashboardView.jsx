@@ -27,6 +27,12 @@ import SubjectInput from '../common/SubjectInput';
 import StudyTimer from '../common/StudyTimer';
 import LastUpdatedLabel from '../common/LastUpdatedLabel';
 import { useAutoRefresh } from '../../hooks/useAutoRefresh';
+import {
+  combineLocalDateTime,
+  formatLocalDate,
+  formatLocalTime,
+  getDefaultStartTime,
+} from '../../utils/dateTime';
 
 export default function DashboardView({ onNavigateToLog }) {
   // Dashboard telemetry, subjects, and monthly chart data
@@ -39,11 +45,14 @@ export default function DashboardView({ onNavigateToLog }) {
   const [chartViewMode, setChartViewMode] = useState('week');
 
   // Form State for "Log Study Time"
-  const todayStr = new Date().toISOString().split('T')[0];
-  const [formDate, setFormDate] = useState(todayStr);
+  const todayStr = formatLocalDate();
+  const [formDate, setFormDate] = useState(() => formatLocalDate());
   const [formSubject, setFormSubject] = useState('');
   const [formHours, setFormHours] = useState('1');
   const [formMinutes, setFormMinutes] = useState('30');
+  const [timeEntryMode, setTimeEntryMode] = useState('clock');
+  const [formStartTime, setFormStartTime] = useState(() => getDefaultStartTime());
+  const [formEndTime, setFormEndTime] = useState(() => formatLocalTime());
   const [formNotes, setFormNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState(null);
@@ -71,6 +80,8 @@ export default function DashboardView({ onNavigateToLog }) {
     if (subject) setFormSubject(subject);
     setFormHours(hours);
     setFormMinutes(minutes);
+    setTimeEntryMode('duration');
+    setFormEndTime(formatLocalTime());
     setFormDate(todayStr);
     setFeedback({
       type: 'info',
@@ -119,7 +130,7 @@ export default function DashboardView({ onNavigateToLog }) {
   const displayWeeklyPercent = weeklyCompletionRate > 0 ? weeklyCompletionRate : 78;
 
   // 3-Segment colors for top 3 subjects
-  const segmentColors = ['#F7A8D8', '#FFD23F', '#FF6B4A']; // Pink, Yellow, Coral
+  const segmentColors = ['#B7E4C7', '#D7E88C', '#168A4A'];
 
   const top3 = subjectsList.slice(0, 3);
   const top3TotalMinutes = top3.reduce((acc, s) => acc + s.minutes, 0) || 1;
@@ -150,31 +161,62 @@ export default function DashboardView({ onNavigateToLog }) {
   // Handle Form Submission for "Log Study Time"
   const handleLogStudyTime = async (e) => {
     e.preventDefault();
-    const hoursNum = parseInt(formHours) || 0;
-    const minsNum = parseInt(formMinutes) || 0;
-    const totalMins = hoursNum * 60 + minsNum;
 
     if (!formSubject.trim()) {
       setFeedback({ type: 'error', message: 'Please enter or select a subject name.' });
       return;
     }
-    if (totalMins <= 0) {
-      setFeedback({ type: 'error', message: 'Please log at least 1 minute of study time.' });
+    if (formDate > todayStr) {
+      setFeedback({ type: 'error', message: 'Study sessions can only be logged for today or an earlier date.' });
       return;
+    }
+
+    let startDateTime;
+    let endDateTime;
+    let totalMins;
+    if (timeEntryMode === 'clock') {
+      startDateTime = combineLocalDateTime(formDate, formStartTime);
+      endDateTime = combineLocalDateTime(formDate, formEndTime);
+      if (
+        Number.isNaN(startDateTime.getTime()) ||
+        Number.isNaN(endDateTime.getTime()) ||
+        endDateTime <= startDateTime
+      ) {
+        setFeedback({ type: 'error', message: 'End time must be later than start time.' });
+        return;
+      }
+      totalMins = Math.round((endDateTime - startDateTime) / 60000);
+    } else {
+      const hoursNum = parseInt(formHours, 10) || 0;
+      const minsNum = parseInt(formMinutes, 10) || 0;
+      totalMins = hoursNum * 60 + minsNum;
+      if (totalMins <= 0) {
+        setFeedback({ type: 'error', message: 'Please log at least 1 minute of study time.' });
+        return;
+      }
+      endDateTime = combineLocalDateTime(formDate, formEndTime);
+      startDateTime = new Date(endDateTime.getTime() - totalMins * 60000);
+      if (
+        Number.isNaN(endDateTime.getTime()) ||
+        formatLocalDate(startDateTime) !== formDate
+      ) {
+        setFeedback({
+          type: 'error',
+          message: 'This duration crosses midnight. Choose exact start and end times instead.',
+        });
+        return;
+      }
     }
 
     setIsSubmitting(true);
     setFeedback(null);
 
     try {
-      const targetDate = new Date(formDate + 'T12:00:00');
-      const startTime = new Date(targetDate.getTime() - totalMins * 60000);
-
       await flightsApi.create({
         subject: formSubject.trim(),
         notes: formNotes.trim(),
-        start_time: startTime.toISOString(),
-        end_time: targetDate.toISOString(),
+        start_time: startDateTime.toISOString(),
+        end_time: endDateTime.toISOString(),
       });
 
       setFeedback({ type: 'success', message: `Logged ${totalMins} mins for ${formSubject}! 🎉` });
@@ -435,7 +477,7 @@ export default function DashboardView({ onNavigateToLog }) {
                     return (
                       <Cell
                         key={`bar-${index}`}
-                        fill={isHighest ? '#FF6B4A' : '#E8EEF7'}
+                        fill={isHighest ? '#168A4A' : '#E5EFE8'}
                         className="progress-bar-cell"
                       />
                     );
@@ -451,8 +493,8 @@ export default function DashboardView({ onNavigateToLog }) {
               >
                 <defs>
                   <linearGradient id="dashboardMonthGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#FF6B4A" stopOpacity={0.28} />
-                    <stop offset="95%" stopColor="#FF6B4A" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="#168A4A" stopOpacity={0.28} />
+                    <stop offset="95%" stopColor="#168A4A" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
                 <XAxis
@@ -481,11 +523,11 @@ export default function DashboardView({ onNavigateToLog }) {
                 <Area
                   type="monotone"
                   dataKey="minutes"
-                  stroke="#FF6B4A"
+                  stroke="#168A4A"
                   strokeWidth={3}
                   fillOpacity={1}
                   fill="url(#dashboardMonthGradient)"
-                  activeDot={{ r: 5, fill: '#FF6B4A', stroke: '#FFFFFF', strokeWidth: 2 }}
+                  activeDot={{ r: 5, fill: '#168A4A', stroke: '#FFFFFF', strokeWidth: 2 }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -530,6 +572,7 @@ export default function DashboardView({ onNavigateToLog }) {
                 type="date"
                 className="modern-input"
                 value={formDate}
+                max={todayStr}
                 onChange={(e) => setFormDate(e.target.value)}
                 required
               />
@@ -549,55 +592,112 @@ export default function DashboardView({ onNavigateToLog }) {
               />
             </div>
 
-            <div className="duration-inputs-row">
-              <div className="form-group flex-1">
-                <label className="form-label">
-                  <Clock size={14} className="label-icon" /> Hours
-                </label>
-                <select
-                  className="modern-input modern-select"
-                  value={formHours}
-                  onChange={(e) => setFormHours(e.target.value)}
-                >
-                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((h) => (
-                    <option key={h} value={h}>
-                      {h} hr
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group flex-1">
-                <label className="form-label">Minutes</label>
-                <select
-                  className="modern-input modern-select"
-                  value={formMinutes}
-                  onChange={(e) => setFormMinutes(e.target.value)}
-                >
-                  {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
-                    <option key={m} value={m}>
-                      {m} min
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="send-btn-wrapper">
-                <button
-                  type="submit"
-                  className="coral-send-btn"
-                  disabled={isSubmitting}
-                  title="Log Study Time"
-                  aria-label="Submit study session"
-                >
-                  {isSubmitting ? (
-                    <span className="spinner-dot" />
-                  ) : (
-                    <ArrowRight size={22} />
-                  )}
-                </button>
-              </div>
+            <div className="time-entry-toggle" role="group" aria-label="Time entry mode">
+              <button
+                type="button"
+                className={timeEntryMode === 'clock' ? 'active' : ''}
+                aria-pressed={timeEntryMode === 'clock'}
+                onClick={() => setTimeEntryMode('clock')}
+              >
+                Start & end
+              </button>
+              <button
+                type="button"
+                className={timeEntryMode === 'duration' ? 'active' : ''}
+                aria-pressed={timeEntryMode === 'duration'}
+                onClick={() => setTimeEntryMode('duration')}
+              >
+                Duration
+              </button>
             </div>
+
+            {timeEntryMode === 'clock' ? (
+              <div className="duration-inputs-row time-inputs-row">
+                <div className="form-group flex-1">
+                  <label className="form-label">
+                    <Clock size={14} className="label-icon" /> Start
+                  </label>
+                  <input
+                    type="time"
+                    className="modern-input"
+                    value={formStartTime}
+                    onChange={(e) => setFormStartTime(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group flex-1">
+                  <label className="form-label">End</label>
+                  <input
+                    type="time"
+                    className="modern-input"
+                    value={formEndTime}
+                    onChange={(e) => setFormEndTime(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="send-btn-wrapper">
+                  <button
+                    type="submit"
+                    className="coral-send-btn"
+                    disabled={isSubmitting}
+                    title="Log Study Time"
+                    aria-label="Submit study session"
+                  >
+                    {isSubmitting ? <span className="spinner-dot" /> : <ArrowRight size={22} />}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="duration-inputs-row time-inputs-row">
+                <div className="form-group flex-1">
+                  <label className="form-label">
+                    <Clock size={14} className="label-icon" /> Hours
+                  </label>
+                  <select
+                    className="modern-input modern-select"
+                    value={formHours}
+                    onChange={(e) => setFormHours(e.target.value)}
+                  >
+                    {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((h) => (
+                      <option key={h} value={h}>{h} hr</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group flex-1">
+                  <label className="form-label">Minutes</label>
+                  <select
+                    className="modern-input modern-select"
+                    value={formMinutes}
+                    onChange={(e) => setFormMinutes(e.target.value)}
+                  >
+                    {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
+                      <option key={m} value={m}>{m} min</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group flex-1">
+                  <label className="form-label">End time</label>
+                  <input
+                    type="time"
+                    className="modern-input"
+                    value={formEndTime}
+                    onChange={(e) => setFormEndTime(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="send-btn-wrapper">
+                  <button
+                    type="submit"
+                    className="coral-send-btn"
+                    disabled={isSubmitting}
+                    title="Log Study Time"
+                    aria-label="Submit study session"
+                  >
+                    {isSubmitting ? <span className="spinner-dot" /> : <ArrowRight size={22} />}
+                  </button>
+                </div>
+              </div>
+            )}
           </form>
         </div>
       </section>

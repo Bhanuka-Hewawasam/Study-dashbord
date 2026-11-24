@@ -8,11 +8,11 @@ export const USER_NAME = 'Shashidu';
 
 // Accent colors used across charts and subject tags
 export const ACCENT_COLORS = [
-  '#FF6B4A', // Coral Orange
-  '#F7A8D8', // Soft Pink
-  '#FFD23F', // Soft Yellow
-  '#5ED3A8', // Mint Green
-  '#4CC9F0', // Sky Blue
-  '#9B87F5', // Soft Purple
-  '#F97316', // Amber
+  '#168A4A',
+  '#55C78C',
+  '#B7E4C7',
+  '#D7E88C',
+  '#2D8C8B',
+  '#77B7E8',
+  '#8B9D43',
 ];

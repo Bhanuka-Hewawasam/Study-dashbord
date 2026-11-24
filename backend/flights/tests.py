@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 
 from django.utils import timezone
 from rest_framework import status
@@ -87,17 +87,34 @@ class StudyPilotAPITests(APITestCase):
         self.assertEqual(data[1]["sessions_count"], 1)
 
     def test_post_flight_publicly(self):
-        now = timezone.now()
+        end_time = timezone.make_aware(
+            datetime.combine(timezone.localdate(), time(hour=12))
+        )
         payload = {
             "subject": "Database Systems",
             "notes": "Indexing mechanics",
-            "start_time": now.isoformat(),
-            "end_time": (now + timedelta(minutes=45)).isoformat(),
+            "start_time": (end_time - timedelta(minutes=45)).isoformat(),
+            "end_time": end_time.isoformat(),
         }
         response = self.client.post("/api/flights/", payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["subject"], "Database Systems")
         self.assertEqual(response.data["duration_minutes"], 45)
+
+    def test_future_date_flight_is_rejected(self):
+        end_time = timezone.make_aware(
+            datetime.combine(timezone.localdate() + timedelta(days=1), time(hour=12))
+        )
+        response = self.client.post(
+            "/api/flights/",
+            {
+                "subject": "Future Study",
+                "start_time": (end_time - timedelta(minutes=45)).isoformat(),
+                "end_time": end_time.isoformat(),
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("end_time", response.data)
 
     def test_get_and_patch_flight_plan(self):
         get_res = self.client.get("/api/flight-plan/")
