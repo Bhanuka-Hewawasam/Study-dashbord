@@ -112,25 +112,23 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
-CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     "accept",
     "accept-encoding",
-    "authorization",
     "content-type",
     "dnt",
     "origin",
     "user-agent",
     "x-csrftoken",
     "x-requested-with",
-    "x-api-token",  # Allow our custom pilot auth header
 ]
 
 
 # Django REST Framework configuration
 REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
     "DEFAULT_PERMISSION_CLASSES": [
-        "flights.permissions.HasPilotTokenOrReadOnly",
+        "rest_framework.permissions.AllowAny",
     ],
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",

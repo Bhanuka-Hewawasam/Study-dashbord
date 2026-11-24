@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -21,17 +21,18 @@ import {
   Cell,
   ReferenceLine,
 } from 'recharts';
-import { flightsApi, statsApi, reportsApi } from '../../api/client';
+import { flightsApi, statsApi, subjectsApi, reportsApi } from '../../api/client';
 import { USER_NAME } from '../../constants';
 import SubjectInput from '../common/SubjectInput';
 import StudyTimer from '../common/StudyTimer';
+import LastUpdatedLabel from '../common/LastUpdatedLabel';
+import { useAutoRefresh } from '../../hooks/useAutoRefresh';
 
 export default function DashboardView({ onNavigateToLog }) {
-  // Telemetry & Flights State
+  // Dashboard telemetry, subjects, and monthly chart data
   const [stats, setStats] = useState(null);
+  const [subjects, setSubjects] = useState([]);
   const [monthlyData, setMonthlyData] = useState(null);
-  const [flights, setFlights] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [subjectPage, setSubjectPage] = useState(0);
 
   // Chart View Mode: "week" or "month"
@@ -47,27 +48,23 @@ export default function DashboardView({ onNavigateToLog }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState(null);
 
-  // Fetch telemetry, monthly report & flight data
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const [statsData, flightsData, monthData] = await Promise.all([
-        statsApi.get().catch(() => null),
-        flightsApi.getAll().catch(() => []),
-        reportsApi.getMonthly().catch(() => null),
+      const [statsData, subjectsData, monthData] = await Promise.all([
+        statsApi.get(),
+        subjectsApi.getAll(),
+        reportsApi.getMonthly(),
       ]);
       setStats(statsData);
-      setFlights(flightsData || []);
+      setSubjects(subjectsData || []);
       setMonthlyData(monthData);
+      return true;
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
-    } finally {
-      setLoading(false);
+      return false;
     }
-  };
-
-  useEffect(() => {
-    fetchData();
   }, []);
+  const { lastRefreshed, triggerRefresh } = useAutoRefresh(fetchData);
 
   // Callback from StudyTimer widget to fill form
   const handleFillFromTimer = ({ subject, hours, minutes }) => {
@@ -81,38 +78,27 @@ export default function DashboardView({ onNavigateToLog }) {
     });
   };
 
-  // Compute sessions count per subject from flights list
-  const subjectSessionCounts = React.useMemo(() => {
-    const counts = {};
-    flights.forEach((f) => {
-      if (f.subject) {
-        counts[f.subject] = (counts[f.subject] || 0) + 1;
-      }
-    });
-    return counts;
-  }, [flights]);
-
-  // Derived subjects data with safe defaults
   const subjectBreakdown = stats?.subject_breakdown || [];
-  const subjectsList = subjectBreakdown.length > 0
-    ? subjectBreakdown.map((s) => ({
-        name: s.subject,
-        minutes: s.minutes || 0,
-        percentage: s.percentage || 0,
-        sessions: subjectSessionCounts[s.subject] || 1,
-      }))
-    : [
-        { name: 'Java', minutes: 180, percentage: 40, sessions: 3 },
-        { name: 'Database Systems', minutes: 120, percentage: 30, sessions: 2 },
-        { name: 'Mobile App Development', minutes: 90, percentage: 20, sessions: 2 },
-      ];
+  const breakdownByName = new Map(
+    subjectBreakdown.map((entry) => [entry.subject.toLowerCase(), entry])
+  );
+  const subjectsList = subjects.map((subject) => {
+    const breakdown = breakdownByName.get(subject.name.toLowerCase());
+    return {
+      name: subject.name,
+      minutes: breakdown?.minutes || 0,
+      percentage: breakdown?.percentage || 0,
+      sessions: subject.sessions_count || 0,
+    };
+  });
 
   // Subjects pagination (shows 3 at a time)
   const itemsPerPage = 3;
   const maxPage = Math.max(0, Math.ceil(subjectsList.length / itemsPerPage) - 1);
+  const currentSubjectPage = Math.min(subjectPage, maxPage);
   const visibleSubjects = subjectsList.slice(
-    subjectPage * itemsPerPage,
-    (subjectPage + 1) * itemsPerPage
+    currentSubjectPage * itemsPerPage,
+    (currentSubjectPage + 1) * itemsPerPage
   );
 
   const handlePrevSubject = () => {
@@ -194,7 +180,7 @@ export default function DashboardView({ onNavigateToLog }) {
       setFeedback({ type: 'success', message: `Logged ${totalMins} mins for ${formSubject}! 🎉` });
       setFormNotes('');
       // Auto-refresh dashboard stats, subjects, and charts without manual page reload!
-      await fetchData();
+      await triggerRefresh();
     } catch (err) {
       setFeedback({
         type: 'error',
@@ -244,6 +230,7 @@ export default function DashboardView({ onNavigateToLog }) {
         <div className="stat-card-header">
           <div className="user-greeting-wrap">
             <span className="user-salutation">Welcome, {USER_NAME} 👋</span>
+            <LastUpdatedLabel lastRefreshed={lastRefreshed} />
             <div className="weekly-goal-display">
               <span className="big-percent-stat">{displayWeeklyPercent}%</span>
               <span className="weekly-goal-label">of the weekly goal done</span>
@@ -557,6 +544,7 @@ export default function DashboardView({ onNavigateToLog }) {
                 value={formSubject}
                 onChange={setFormSubject}
                 placeholder="Choose or type a subject..."
+                subjectOptions={subjects}
                 required
               />
             </div>

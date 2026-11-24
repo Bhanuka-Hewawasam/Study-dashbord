@@ -14,21 +14,23 @@ export default function SubjectInput({
   id,
   className = '',
   autoFocus = false,
+  subjectOptions,
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [subjects, setSubjects] = useState([]);
+  const [loadedSubjects, setLoadedSubjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   const containerRef = useRef(null);
   const inputRef = useRef(null);
+  const subjects = subjectOptions ?? loadedSubjects;
 
   // Load distinct subjects from backend
   const loadSubjects = async () => {
     try {
       setLoading(true);
       const data = await subjectsApi.getAll();
-      setSubjects(data || []);
+      setLoadedSubjects(data || []);
     } catch (err) {
       console.error('Failed to load subjects list:', err);
     } finally {
@@ -37,8 +39,10 @@ export default function SubjectInput({
   };
 
   useEffect(() => {
-    loadSubjects();
-  }, []);
+    if (subjectOptions === undefined) {
+      loadSubjects();
+    }
+  }, [subjectOptions]);
 
   // Close dropdown on outside click
   useEffect(() => {

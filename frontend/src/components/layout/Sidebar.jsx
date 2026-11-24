@@ -52,6 +52,7 @@ export default function Sidebar({ currentTab, onSelectTab }) {
             <span className="avatar-status">Online</span>
           </div>
         </div>
+
       </div>
     </aside>
   );

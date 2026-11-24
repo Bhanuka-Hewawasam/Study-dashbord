@@ -2,33 +2,19 @@ import axios from 'axios';
 
 /**
  * StudyPilot API Client
- * Configures base URL from Vite environment variables and attaches
- * the secret token to headers for authorized write operations.
+ * - Base URL from Vite env variable VITE_API_BASE_URL
  */
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-const API_TOKEN = import.meta.env.VITE_API_TOKEN || 'pilot-secret-token';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
-    'X-API-Token': API_TOKEN,
   },
   timeout: 10000,
 });
 
-// Interceptor to ensure token is dynamically included on all outgoing requests
-apiClient.interceptors.request.use(
-  (config) => {
-    if (!config.headers['X-API-Token']) {
-      config.headers['X-API-Token'] = API_TOKEN;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Response interceptor for clear console debugging
+// --- Response Interceptor ---
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {

@@ -46,7 +46,10 @@ export default function App() {
       {/* Big Rounded Main Dashboard Shell */}
       <div className="main-container">
         {/* Left Slim Sidebar */}
-        <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} />
+        <Sidebar
+          currentTab={currentTab}
+          onSelectTab={setCurrentTab}
+        />
 
         {/* Dynamic Content Panel */}
         <main className="main-content-area">
