@@ -7,5 +7,6 @@ venv/
 node_modules/
 backend/venv/
 backend/.venv/
+backend/staticfiles/
 frontend/node_modules/
 frontend/.env*
